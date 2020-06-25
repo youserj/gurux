@@ -202,13 +202,13 @@ class GXDLMSReader:
 
                 self.writeTrace("RX: " + self.now() + "\t" + str(p.reply), TraceLevel.VERBOSE)
                 #If echo is used.
-                replyStr = str(p.reply)
+                replyStr = str(p.reply, 'utf-8')
                 if data == replyStr:
                     p.reply = None
                     if not self.media.receive(p):
                         raise Exception("Failed to received reply from the media.")
                     self.writeTrace("RX: " + self.now() + "\t" + str(p.reply), TraceLevel.VERBOSE)
-                    replyStr = str(p.reply)
+                    replyStr = str(p.reply, 'utf-8')
 
             if not replyStr or replyStr[0] != '/':
                 raise Exception("Invalid responce : " + replyStr)
@@ -230,16 +230,18 @@ class GXDLMSReader:
             else:
                 raise Exception("Unknown baud rate.")
 
-            print("Bitrate is : " + bitrate)
+            print("Bitrate is : " + str(bitrate))
             #Send ACK
             #Send Protocol control character
-            controlCharacter = '2'.encode()
+            controlCharacter = '2'
             #"2" HDLC protocol procedure (Mode E)
             #Mode control character
             #"2" //(HDLC protocol procedure) (Binary mode)
-            modeControlCharacter = '2'.encode()
+            modeControlCharacter = '2'
             #Set mode E.
-            tmp = bytearray([0x06, controlCharacter, baudrate, modeControlCharacter, 13, 10])
+            ACK = "\x06"
+            LINE_END = "\x0d\x0a"
+            tmp = f'{ACK}{controlCharacter}{baudrate}{modeControlCharacter}{LINE_END}'
             p.reply = None
             with self.media.getSynchronous():
                 self.media.send(tmp)
